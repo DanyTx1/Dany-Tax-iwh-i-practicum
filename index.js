@@ -5,7 +5,6 @@ const path = require('path');
 
 const app = express();
 
-// Configuración de Pug y estáticos
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
@@ -14,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ENV
 const HUBSPOT_TOKEN = process.env.HUBSPOT_PRIVATE_APP_TOKEN;
-const CUSTOM_OBJECT = process.env.HS_CUSTOM_OBJECT; // ej. '2-48909376' o 'p2_pets'
+const CUSTOM_OBJECT = process.env.HS_CUSTOM_OBJECT; 
 const PROPS = (process.env.HS_CUSTOM_PROPERTIES || 'name,color,species')
   .split(',')
   .map(s => s.trim());
@@ -28,7 +27,7 @@ const hub = axios.create({
   },
 });
 
-// GET "/" — homepage: renderiza tabla con registros del custom object
+// GET "/" — homepage: 
 app.get('/', async (req, res) => {
   try {
     const r = await hub.get(`/crm/v3/objects/${CUSTOM_OBJECT}`, {
@@ -45,7 +44,7 @@ app.get('/', async (req, res) => {
   }
 });
 
-// GET "/update-cobj" — muestra el formulario
+// GET "/update-cobj" 
 app.get('/update-cobj', (req, res) => {
   res.render('updates', {
     title: 'Update Custom Object Form | Integrating With HubSpot I Practicum',
@@ -55,7 +54,7 @@ app.get('/update-cobj', (req, res) => {
 
 const LABELS = Object.fromEntries(PROPS.map(p => [p, p.charAt(0).toUpperCase() + p.slice(1)]));
 
-// POST "/update-cobj" — crea un nuevo registro con los datos del form
+// POST "/update-cobj"
 app.post('/update-cobj', async (req, res) => {
   try {
     const properties = {};
@@ -65,7 +64,7 @@ app.post('/update-cobj', async (req, res) => {
     name: 'Name',
     color: 'Color',
     species: 'Species',
-    spacies: 'Species'  // <- si tu internal name quedó así, lo mostramos bien
+    spacies: 'Species' 
     };
 
     const PLACEHOLDERS = {
