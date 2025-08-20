@@ -1,62 +1,79 @@
-requiere('detenv').config();
+require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
-const { cache } = require('react');
-const app = express();
-const path = requiere('path');
+const path = require('path');
 
+const app = express();
+
+// Configuración de Pug y estáticos
 app.set('view engine', 'pug');
-app.set('view', path.join(__dirname, 'view'));
-app.use(express.urlencoded({extended : true}));
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-//Axion
+// ENV
+const HUBSPOT_TOKEN = process.env.HUBSPOT_PRIVATE_APP_TOKEN;
+const CUSTOM_OBJECT = process.env.HS_CUSTOM_OBJECT; // ej. '2-48909376' o 'p2_pets'
+const PROPS = (process.env.HS_CUSTOM_PROPERTIES || 'name,color,species')
+  .split(',')
+  .map(s => s.trim());
+
+// Cliente Axios para HubSpot
 const hub = axios.create({
-    baseURL: "https://api.hubapi.com",
-    headers: {
-        Authorization: `Bearer ${HUBSPOT_TOKEN}`,
-        'Content-Type': 'application/json'
-    },
-})
-
-app.get('/', async (req, res) =>{
-    try{
-        const r = await hub.get(`/crm/v3/objects/${CUSTOM_OBJECT}`,{
-            params: {properties: PROPS.join(','), limit: 100}
-        });
-        res.render('homepage',{
-            title: 'Custom Objects | Practicum',
-            records: r.data.results || [],
-            properties: PROPS
-        });
-    } catch (err){
-        return sendError(err, res);
-    }
+  baseURL: 'https://api.hubapi.com',
+  headers: {
+    Authorization: `Bearer ${HUBSPOT_TOKEN}`,
+    'Content-Type': 'application/json',
+  },
 });
 
-app.get('/upgrade-obj', (req, res=>{
-    res.render('updates',{
-        title: 'Update Custom Object Form | Integrating With HubSpot I Practicum',
-        properties: PROPS
+// GET "/" — homepage: renderiza tabla con registros del custom object
+app.get('/', async (req, res) => {
+  try {
+    const r = await hub.get(`/crm/v3/objects/${CUSTOM_OBJECT}`, {
+      params: { properties: PROPS.join(','), limit: 100 },
     });
-}));
-
-app.post('/upgrade-obj', async (req, res) => {
-    try{
-        const properties = {}
-        for(const p of PROPS) properties[p] = req.body[p];
-        await hub.post(`/crm/v3/objects/${CUSTOM_OBJECT}`, { properties });
-        return res.redirect('/');
-    }catch (error){
-        return sendError(error, res);
-    }
+    res.render('homepage', {
+      title: 'Custom Objects | Practicum',
+      records: r.data.results || [],
+      properties: PROPS,
+    });
+    res.render('homepage', { title:'Custom Objects | Practicum', records: r.data.results || [], properties: PROPS, labels: LABELS });
+  } catch (err) {
+    return sendError(err, res);
+  }
 });
 
-function sendError(err, res){
-    const smg = err.response ? JSON.stringify(err.response.data, null, 2) : String(err);
-    console.error(smg);
-    res.estatus(500).sed(`<pre>${msg}</pre>`);
+// GET "/update-cobj" — muestra el formulario
+app.get('/update-cobj', (req, res) => {
+  res.render('updates', {
+    title: 'Update Custom Object Form | Integrating With HubSpot I Practicum',
+    properties: PROPS,
+  });
+});
+
+const LABELS = Object.fromEntries(PROPS.map(p => [p, p.charAt(0).toUpperCase() + p.slice(1)]));
+
+// POST "/update-cobj" — crea un nuevo registro con los datos del form
+app.post('/update-cobj', async (req, res) => {
+  try {
+    const properties = {};
+    for (const p of PROPS) properties[p] = req.body[p];
+    await hub.post(`/crm/v3/objects/${CUSTOM_OBJECT}`, { properties });
+    return res.redirect('/');
+  } catch (err) {
+    return sendError(err, res);
+  }
+});
+
+// Helper de errores
+function sendError(err, res) {
+  const msg = err.response
+    ? JSON.stringify(err.response.data, null, 2)
+    : String(err);
+  console.error(msg);
+  res.status(500).send(`<pre>${msg}</pre>`);
 }
 
 const PORT = process.env.PORT || 3000;

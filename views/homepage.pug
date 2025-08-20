@@ -1,27 +1,26 @@
-doctype html 
-html 
-    head 
-
-        meta(charset='utf-8')
-        title = "Tabla"
-        link(rel="stylesheet", href="/css/style.css")
-
-    body
-    
-        a(href="/upgrade-obj")
-        h1 = title 
-        if records && records.length
-            table 
-                thead
-                    tr
-                        th ID 
-                        each prop in properties
-                            th= prop 
-                tbody 
-                    each r in records
-                        tr 
-                            td= r.id 
-                            each prop in propertis
-                            td= (r.properties && r.properties[prop]) || ''
-        else
-        p No dates 
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title= title
+    link(rel='stylesheet', href='/css/style.css')
+  body
+    .container
+      .topbar
+        a(href='/update-cobj') Add to this table
+      h1= title
+      if records && records.length
+        table
+          thead
+            tr
+              th ID
+              each prop in properties
+                th= labels && labels[prop] ? labels[prop] : prop
+          tbody
+            each r in records
+              tr
+                td.idcol= r.id
+                each prop in properties
+                  td= (r.properties && r.properties[prop]) || '—'
+      else
+        p No hay registros aún.

@@ -56,3 +56,18 @@ input[type="submit"] {
     padding: .375rem 1rem;
     margin-top: 10px;
 }
+
+/* Layout básico */
+body { font-family: system-ui, Arial, sans-serif; background:#fff; color:#111; }
+.container { max-width: 920px; margin: 40px auto; padding: 0 16px; }
+h1 { font-size: 32px; margin: 0 0 16px; }
+.topbar { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
+.topbar a { text-decoration:none; border:1px solid #e5e7eb; padding:8px 12px; border-radius:8px; }
+.topbar a:hover { background:#f3f4f6; }
+
+/* Tabla */
+table { width:100%; border-collapse: collapse; }
+th, td { border:1px solid #e5e7eb; padding:10px 12px; vertical-align: top; }
+thead th { background:#f9fafb; text-align:left; font-weight:600; }
+tbody tr:nth-child(even) { background:#fafafa; }
+.idcol { color:#6b7280; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
