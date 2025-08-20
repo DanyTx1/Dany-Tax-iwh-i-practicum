@@ -58,15 +58,26 @@ input[type="submit"] {
 }
 
 /* Layout básico */
-body { font-family: system-ui, Arial, sans-serif; background:#fff; color:#111; }
-.container { max-width: 920px; margin: 40px auto; padding: 0 16px; }
+/* Layout general */
+body { font-family: system-ui, Arial, sans-serif; color:#111; background:#fff; }
+.container { max-width: 960px; margin: 40px auto; padding: 0 16px; }
 h1 { font-size: 32px; margin: 0 0 16px; }
-.topbar { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
+
+/* Topbar y enlaces */
+.topbar { display:flex; gap:12px; margin-bottom:16px; }
 .topbar a { text-decoration:none; border:1px solid #e5e7eb; padding:8px 12px; border-radius:8px; }
 .topbar a:hover { background:#f3f4f6; }
 
+/* Card/form */
+.card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+.form-grid { display:grid; gap:14px; grid-template-columns:1fr; }
+.field label { display:block; font-weight:600; margin-bottom:6px; }
+input, textarea, select { width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; }
+.btn { margin-top:8px; padding:10px 14px; border:1px solid #111827; border-radius:8px; background:#111827; color:#fff; cursor:pointer; }
+.btn:hover { background:#0b1220; }
+
 /* Tabla */
-table { width:100%; border-collapse: collapse; }
+table { width:100%; border-collapse: collapse; margin-top:8px; }
 th, td { border:1px solid #e5e7eb; padding:10px 12px; vertical-align: top; }
 thead th { background:#f9fafb; text-align:left; font-weight:600; }
 tbody tr:nth-child(even) { background:#fafafa; }

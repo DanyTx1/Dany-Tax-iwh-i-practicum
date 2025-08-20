@@ -61,6 +61,19 @@ app.post('/update-cobj', async (req, res) => {
     const properties = {};
     for (const p of PROPS) properties[p] = req.body[p];
     await hub.post(`/crm/v3/objects/${CUSTOM_OBJECT}`, { properties });
+    const PRETTY_LABELS = {
+    name: 'Name',
+    color: 'Color',
+    species: 'Species',
+    spacies: 'Species'  // <- si tu internal name quedó así, lo mostramos bien
+    };
+
+    const PLACEHOLDERS = {
+    name: 'e.g., Toby',
+    color: 'e.g., Brown',
+    species: 'e.g., Dog',
+    spacies: 'e.g., Dog'
+    };
     return res.redirect('/');
   } catch (err) {
     return sendError(err, res);

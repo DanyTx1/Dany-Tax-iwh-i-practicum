@@ -1,18 +1,23 @@
 doctype html
-html 
-    head 
+html
+  head
+    meta(charset='utf-8')
+    title= title
+    link(rel='stylesheet', href='/css/style.css')
+  body
+    .container
+      .topbar
+        a(href='/') ← Return to the homepage
+      h1= title
 
-        meta(charset='urf-8')
-        title= 'Upgrade dates'
-        link(rel="stylesheet", href="/css/style.css")
-
-    body 
-
-    a(href='/')
-    h1 = title 
-    form(action="/update-cobj", method="post")
-        each prop in properties
-            .field
-                label(for='prop')= prop 
-                input(type='text', name='prop' id='prop' required)
-            button(type="submit") Guardar  
+      .card
+        form(method='POST', action='/update-cobj', novalidate)
+          .form-grid
+            each prop in properties
+              .field
+                label(for=prop)= labels && labels[prop] ? labels[prop] : prop
+                if prop === 'bio'
+                  textarea(name=prop id=prop rows='3' placeholder=(placeholders && placeholders[prop]) ? placeholders[prop] : '')
+                else
+                  input(type='text' name=prop id=prop required placeholder=(placeholders && placeholders[prop]) ? placeholders[prop] : '')
+          button.btn(type='submit') Guardar
