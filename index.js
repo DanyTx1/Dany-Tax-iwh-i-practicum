@@ -1,71 +1,93 @@
+require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
+const path = require('path');
+
 const app = express();
 
+// Configuración de Pug y estáticos
 app.set('view engine', 'pug');
-app.use(express.static(__dirname + '/public'));
+app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// * Please DO NOT INCLUDE the private app access token in your repo. Don't do this practicum in your normal account.
-const PRIVATE_APP_ACCESS = '';
+// ENV
+const HUBSPOT_TOKEN = process.env.HUBSPOT_PRIVATE_APP_TOKEN;
+const CUSTOM_OBJECT = process.env.HS_CUSTOM_OBJECT; // ej. '2-48909376' o 'p2_pets'
+const PROPS = (process.env.HS_CUSTOM_PROPERTIES || 'name,color,species')
+  .split(',')
+  .map(s => s.trim());
 
-// TODO: ROUTE 1 - Create a new app.get route for the homepage to call your custom object data. Pass this data along to the front-end and create a new pug template in the views folder.
-
-// * Code for Route 1 goes here
-
-// TODO: ROUTE 2 - Create a new app.get route for the form to create or update new custom object data. Send this data along in the next route.
-
-// * Code for Route 2 goes here
-
-// TODO: ROUTE 3 - Create a new app.post route for the custom objects form to create or update your custom object data. Once executed, redirect the user to the homepage.
-
-// * Code for Route 3 goes here
-
-/** 
-* * This is sample code to give you a reference for how you should structure your calls. 
-
-* * App.get sample
-app.get('/contacts', async (req, res) => {
-    const contacts = 'https://api.hubspot.com/crm/v3/objects/contacts';
-    const headers = {
-        Authorization: `Bearer ${PRIVATE_APP_ACCESS}`,
-        'Content-Type': 'application/json'
-    }
-    try {
-        const resp = await axios.get(contacts, { headers });
-        const data = resp.data.results;
-        res.render('contacts', { title: 'Contacts | HubSpot APIs', data });      
-    } catch (error) {
-        console.error(error);
-    }
+// Cliente Axios para HubSpot
+const hub = axios.create({
+  baseURL: 'https://api.hubapi.com',
+  headers: {
+    Authorization: `Bearer ${HUBSPOT_TOKEN}`,
+    'Content-Type': 'application/json',
+  },
 });
 
-* * App.post sample
-app.post('/update', async (req, res) => {
-    const update = {
-        properties: {
-            "favorite_book": req.body.newVal
-        }
-    }
+// GET "/" — homepage: renderiza tabla con registros del custom object
+app.get('/', async (req, res) => {
+  try {
+    const r = await hub.get(`/crm/v3/objects/${CUSTOM_OBJECT}`, {
+      params: { properties: PROPS.join(','), limit: 100 },
+    });
+    res.render('homepage', {
+      title: 'Custom Objects | Practicum',
+      records: r.data.results || [],
+      properties: PROPS,
+    });
+    res.render('homepage', { title:'Custom Objects | Practicum', records: r.data.results || [], properties: PROPS, labels: LABELS });
+  } catch (err) {
+    return sendError(err, res);
+  }
+});
 
-    const email = req.query.email;
-    const updateContact = `https://api.hubapi.com/crm/v3/objects/contacts/${email}?idProperty=email`;
-    const headers = {
-        Authorization: `Bearer ${PRIVATE_APP_ACCESS}`,
-        'Content-Type': 'application/json'
+// GET "/update-cobj" — muestra el formulario
+app.get('/update-cobj', (req, res) => {
+  res.render('updates', {
+    title: 'Update Custom Object Form | Integrating With HubSpot I Practicum',
+    properties: PROPS,
+  });
+});
+
+const LABELS = Object.fromEntries(PROPS.map(p => [p, p.charAt(0).toUpperCase() + p.slice(1)]));
+
+// POST "/update-cobj" — crea un nuevo registro con los datos del form
+app.post('/update-cobj', async (req, res) => {
+  try {
+    const properties = {};
+    for (const p of PROPS) properties[p] = req.body[p];
+    await hub.post(`/crm/v3/objects/${CUSTOM_OBJECT}`, { properties });
+    const PRETTY_LABELS = {
+    name: 'Name',
+    color: 'Color',
+    species: 'Species',
+    spacies: 'Species'  // <- si tu internal name quedó así, lo mostramos bien
     };
 
-    try { 
-        await axios.patch(updateContact, update, { headers } );
-        res.redirect('back');
-    } catch(err) {
-        console.error(err);
-    }
-
+    const PLACEHOLDERS = {
+    name: 'e.g., Toby',
+    color: 'e.g., Brown',
+    species: 'e.g., Dog',
+    spacies: 'e.g., Dog'
+    };
+    return res.redirect('/');
+  } catch (err) {
+    return sendError(err, res);
+  }
 });
-*/
 
+// Helper de errores
+function sendError(err, res) {
+  const msg = err.response
+    ? JSON.stringify(err.response.data, null, 2)
+    : String(err);
+  console.error(msg);
+  res.status(500).send(`<pre>${msg}</pre>`);
+}
 
-// * Localhost
-app.listen(3000, () => console.log('Listening on http://localhost:3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
