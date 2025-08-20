@@ -1,0 +1,18 @@
+doctype html
+html 
+    head 
+
+        meta(charset='urf-8')
+        title= 'Upgrade dates'
+        link(rel="stylesheet", href="/css/style.css")
+
+    body 
+
+    a(href='/')
+    h1 = title 
+    form(action="/upgrade-obj", method="post")
+        each prop in properties
+            .field
+                label(for='prop')= prop 
+                input(type='text', name='prop' id='prop' required)
+            button(type="submit") Guardar  
